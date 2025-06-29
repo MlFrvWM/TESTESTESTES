@@ -332,7 +332,7 @@ tabPlayer:AddSwitch("Auto Fortune Wheel", function(Value)
     end
 end)
 
-local autoRockFolder = window:AddTab("Rock")
+local tabRock = window:AddTab("Rock")
 
 function gettool()
     for i, v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
@@ -344,7 +344,7 @@ function gettool()
     game:GetService("Players").LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
 end
 
-tabautoRockFolder:AddSwitch("Tiny Rock", function(Value)
+tabRock:AddSwitch("Tiny Rock", function(Value)
     selectrock = "Tiny Island Rock"
     getgenv().autoFarm = Value
     

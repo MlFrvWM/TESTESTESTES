@@ -225,7 +225,7 @@ tabPlayer:AddSwitch("Walk on Water", function(bool)
     end
 end)
 
-local timeDropdown = Player:AddDropdown("Change Time", function(selection)
+local timeDropdown = tabPlayer:AddDropdown("Change Time", function(selection)
     local lighting = game:GetService("Lighting")
     
     if selection == "Night" then

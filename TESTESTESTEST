@@ -344,7 +344,7 @@ function gettool()
     game:GetService("Players").LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
 end
 
-tabRock:AddSwitch("Tiny Rock", function(Value)
+tabautoRockFolder:AddSwitch("Tiny Rock", function(Value)
     selectrock = "Tiny Island Rock"
     getgenv().autoFarm = Value
     

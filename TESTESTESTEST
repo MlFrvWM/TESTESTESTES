@@ -1362,6 +1362,170 @@ tabpets:AddSwitch("Auto Open Aura", function(bool)
     end
 end)
 
+local Players = game:GetService("Players")
+local localPlayer = Players.LocalPlayer
+
+local tabStatus = window:CreateTab("Stats", 4483362458)
+
+local selectedPlayer = nil
+local connections = {}
+
+local labelDisplayName = tabStatus:CreateLabel("Displayname:")
+local labelUsername = tabStatus:CreateLabel("Username:")
+local labelStrength = tabStatus:CreateLabel("Strength: 0 (0)")
+local labelDurability = tabStatus:CreateLabel("Durability: 0 (0)")
+local labelAgility = tabStatus:CreateLabel("Agility: 0 (0)")
+local labelRebirths = tabStatus:CreateLabel("Rebirths: 0 (0)")
+local labelKills = tabStatus:CreateLabel("Kills: 0")
+
+-- Barras de progresso (percentuais fictícios)
+local strengthBar = tabStatus:CreateProgressBar("Strength %")
+local durabilityBar = tabStatus:CreateProgressBar("Durability %")
+local agilityBar = tabStatus:CreateProgressBar("Agility %")
+
+tabStatus:CreateDivider("Advanced Stats")
+
+local labelBaseDurability = tabStatus:CreateLabel("Base Durability: 0")
+local labelUltimateBoost = tabStatus:CreateLabel("Ultimate Boost: 0 (+0%)")
+local labelPetBoost = tabStatus:CreateLabel("Pet Boost (0): 0 (+0%)")
+local labelTotalDurability = tabStatus:CreateLabel("TOTAL DURABILITY: 0", Color3.fromRGB(0, 255, 255))
+local labelBaseDamage = tabStatus:CreateLabel("Your Base Damage: 0")
+local labelPetDamage = tabStatus:CreateLabel("With Your Pets (0): 0", Color3.fromRGB(255, 0, 0))
+local labelHitsToKill = tabStatus:CreateLabel("Hits to Kill: N/A")
+local labelTimeToKill = tabStatus:CreateLabel("Time to Kill: N/A")
+
+tabStatus:CreateDivider("Pets Equipados")
+local labelPets = tabStatus:CreateLabel("Pets: Nenhum")
+
+local function abbreviate(n)
+	local suffixes = {"", "K", "M", "B", "T", "Q"}
+	local i = 1
+	while n >= 1000 and i < #suffixes do
+		n = n / 1000
+		i = i + 1
+	end
+	return string.format("%.1f%s", n, suffixes[i])
+end
+
+local function disconnectAll()
+	for _, conn in ipairs(connections) do
+		pcall(function()
+			conn:Disconnect()
+		end)
+	end
+	connections = {}
+end
+
+local function updateStats(player)
+	if not player then return end
+	selectedPlayer = player
+
+	labelDisplayName:SetText("Displayname: " .. player.DisplayName)
+	labelUsername:SetText("Username: " .. player.Name)
+
+	local ls = player:FindFirstChild("leaderstats")
+	local strength = ls and ls:FindFirstChild("Strength") and ls.Strength.Value or 0
+	local durability = ls and ls:FindFirstChild("Durability") and ls.Durability.Value or 0
+	local agility = ls and ls:FindFirstChild("Agility") and ls.Agility.Value or 0
+	local rebirths = ls and ls:FindFirstChild("Rebirths") and ls.Rebirths.Value or 0
+	local kills = ls and ls:FindFirstChild("Kills") and ls.Kills.Value or 0
+
+	labelStrength:SetText("Strength: " .. strength .. " (" .. abbreviate(strength) .. ")")
+	labelDurability:SetText("Durability: " .. durability .. " (" .. abbreviate(durability) .. ")")
+	labelAgility:SetText("Agility: " .. agility .. " (" .. abbreviate(agility) .. ")")
+	labelRebirths:SetText("Rebirths: " .. rebirths .. " (" .. abbreviate(rebirths) .. ")")
+	labelKills:SetText("Kills: " .. kills)
+
+	strengthBar:Set(strength / 1000000) -- Exemplo: escala até 1 milhão
+	durabilityBar:Set(durability / 1000000)
+	agilityBar:Set(agility / 1000000)
+
+	local baseDur = player:FindFirstChild("BaseDurability") and player.BaseDurability.Value or 0
+	local uBoost = player:FindFirstChild("UltimateBoost") and player.UltimateBoost.Value or 0
+	local petBoost = player:FindFirstChild("PetBoost") and player.PetBoost.Value or 0
+	local baseDamage = player:FindFirstChild("BaseDamage") and player.BaseDamage.Value or 0
+	local petDamage = baseDamage + (baseDamage * (petBoost / 100))
+	local totalDur = durability + (durability * (uBoost + petBoost) / 100)
+
+	labelBaseDurability:SetText("Base Durability: " .. baseDur)
+	labelUltimateBoost:SetText("Ultimate Boost: " .. uBoost .. " (+" .. uBoost .. "%)")
+	labelPetBoost:SetText("Pet Boost (" .. petBoost .. "): +" .. petBoost .. "%")
+	labelTotalDurability:SetText("TOTAL DURABILITY: " .. math.floor(totalDur))
+	labelBaseDamage:SetText("Your Base Damage: " .. baseDamage)
+	labelPetDamage:SetText("With Your Pets (" .. petBoost .. "): " .. math.floor(petDamage))
+
+	-- Pets equipados
+	local petFolder = player:FindFirstChild("Pets")
+	if petFolder and #petFolder:GetChildren() > 0 then
+		local names = {}
+		for _, pet in ipairs(petFolder:GetChildren()) do
+			table.insert(names, pet.Name)
+		end
+		labelPets:SetText("Pets: " .. table.concat(names, ", "))
+	else
+		labelPets:SetText("Pets: Nenhum")
+	end
+end
+
+local function monitorChanges(player)
+	disconnectAll()
+
+	local function watch(obj)
+		if obj then
+			local conn = obj.Changed:Connect(function()
+				updateStats(player)
+			end)
+			table.insert(connections, conn)
+		end
+	end
+
+	local ls = player:FindFirstChild("leaderstats")
+	if ls then
+		for _, stat in ipairs({"Strength", "Durability", "Agility", "Rebirths", "Kills"}) do
+			watch(ls:FindFirstChild(stat))
+		end
+	end
+
+	for _, other in ipairs({"BaseDurability", "UltimateBoost", "PetBoost", "BaseDamage"}) do
+		watch(player:FindFirstChild(other))
+	end
+end
+
+local playerList = {}
+for _, p in ipairs(Players:GetPlayers()) do
+	table.insert(playerList, p.Name .. " (" .. p.DisplayName .. ")")
+end
+
+tabStatus:CreateDropdown("Selecionar Jogador", playerList, function(selection)
+	for _, p in ipairs(Players:GetPlayers()) do
+		if selection == (p.Name .. " (" .. p.DisplayName .. ")") then
+			updateStats(p)
+			monitorChanges(p)
+			break
+		end
+	end
+end)
+
+tabStatus:CreateButton("Atualizar Manualmente", function()
+	if selectedPlayer then
+		updateStats(selectedPlayer)
+	end
+end)
+
+tabStatus:CreateButton("Print Own Stats", function()
+	updateStats(localPlayer)
+	monitorChanges(localPlayer)
+end)
+
+tabStatus:CreateButton("Spectate", function()
+	if selectedPlayer then
+		workspace.CurrentCamera.CameraSubject = selectedPlayer.Character or selectedPlayer
+		print("Espectando:", selectedPlayer.Name)
+	else
+		warn("Nenhum jogador selecionado.")
+	end
+end)
+
 local tabteleport = window:AddTab("Teleport")
 
 tabteleport:AddButton("Spawn", function()

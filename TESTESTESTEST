@@ -1370,31 +1370,31 @@ local tabStatus = window:AddTab("Stats")
 local selectedPlayer = nil
 local connections = {}
 
-local labelDisplayName = tabStatus:CreateLabel("Displayname:")
-local labelUsername = tabStatus:CreateLabel("Username:")
-local labelStrength = tabStatus:CreateLabel("Strength: 0 (0)")
-local labelDurability = tabStatus:CreateLabel("Durability: 0 (0)")
-local labelAgility = tabStatus:CreateLabel("Agility: 0 (0)")
-local labelRebirths = tabStatus:CreateLabel("Rebirths: 0 (0)")
-local labelKills = tabStatus:CreateLabel("Kills: 0")
+local labelDisplayName = tabStatus:AddLabel("Displayname:")
+local labelUsername = tabStatus:AddLabel("Username:")
+local labelStrength = tabStatus:AddLabel("Strength: 0 (0)")
+local labelDurability = tabStatus:AddLabel("Durability: 0 (0)")
+local labelAgility = tabStatus:AddLabel("Agility: 0 (0)")
+local labelRebirths = tabStatus:AddLabel("Rebirths: 0 (0)")
+local labelKills = tabStatus:AddLabel("Kills: 0")
 
-local strengthBar = tabStatus:CreateProgressBar("Strength %")
-local durabilityBar = tabStatus:CreateProgressBar("Durability %")
-local agilityBar = tabStatus:CreateProgressBar("Agility %")
+local strengthBar = tabStatus:AddProgressBar("Strength %")
+local durabilityBar = tabStatus:AddProgressBar("Durability %")
+local agilityBar = tabStatus:AddProgressBar("Agility %")
 
 tabStatus:CreateDivider("Advanced Stats")
 
-local labelBaseDurability = tabStatus:CreateLabel("Base Durability: 0")
-local labelUltimateBoost = tabStatus:CreateLabel("Ultimate Boost: 0 (+0%)")
-local labelPetBoost = tabStatus:CreateLabel("Pet Boost (0): 0 (+0%)")
-local labelTotalDurability = tabStatus:CreateLabel("TOTAL DURABILITY: 0", Color3.fromRGB(0, 255, 255))
-local labelBaseDamage = tabStatus:CreateLabel("Your Base Damage: 0")
-local labelPetDamage = tabStatus:CreateLabel("With Your Pets (0): 0", Color3.fromRGB(255, 0, 0))
-local labelHitsToKill = tabStatus:CreateLabel("Hits to Kill: N/A")
-local labelTimeToKill = tabStatus:CreateLabel("Time to Kill: N/A")
+local labelBaseDurability = tabStatus:AddLabel("Base Durability: 0")
+local labelUltimateBoost = tabStatus:AddLabel("Ultimate Boost: 0 (+0%)")
+local labelPetBoost = tabStatus:AddLabel("Pet Boost (0): 0 (+0%)")
+local labelTotalDurability = tabStatus:AddLabel("TOTAL DURABILITY: 0", Color3.fromRGB(0, 255, 255))
+local labelBaseDamage = tabStatus:AddLabel("Your Base Damage: 0")
+local labelPetDamage = tabStatus:AddLabel("With Your Pets (0): 0", Color3.fromRGB(255, 0, 0))
+local labelHitsToKill = tabStatus:AddLabel("Hits to Kill: N/A")
+local labelTimeToKill = tabStatus:AddLabel("Time to Kill: N/A")
 
 tabStatus:CreateDivider("Pets Equipados")
-local labelPets = tabStatus:CreateLabel("Pets: Nenhum")
+local labelPets = tabStatus:AddLabel("Pets: Nenhum")
 
 local function abbreviate(n)
 	local suffixes = {"", "K", "M", "B", "T", "Q"}
@@ -1453,7 +1453,6 @@ local function updateStats(player)
 	labelBaseDamage:SetText("Your Base Damage: " .. baseDamage)
 	labelPetDamage:SetText("With Your Pets (" .. petBoost .. "): " .. math.floor(petDamage))
 
-	-- Pets equipados
 	local petFolder = player:FindFirstChild("Pets")
 	if petFolder and #petFolder:GetChildren() > 0 then
 		local names = {}
@@ -1505,18 +1504,18 @@ tabStatus:CreateDropdown("Selecionar Jogador", playerList, function(selection)
 	end
 end)
 
-tabStatus:CreateButton("Atualizar Manualmente", function()
+tabStatus:AddButton("Atualizar Manualmente", function()
 	if selectedPlayer then
 		updateStats(selectedPlayer)
 	end
 end)
 
-tabStatus:CreateButton("Print Own Stats", function()
+tabStatus:AddButton("Print Own Stats", function()
 	updateStats(localPlayer)
 	monitorChanges(localPlayer)
 end)
 
-tabStatus:CreateButton("Spectate", function()
+tabStatus:AddButton("Spectate", function()
 	if selectedPlayer then
 		workspace.CurrentCamera.CameraSubject = selectedPlayer.Character or selectedPlayer
 		print("Espectando:", selectedPlayer.Name)

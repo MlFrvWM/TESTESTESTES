@@ -1365,7 +1365,7 @@ end)
 local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
 
-local tabStatus = window:CreateTab("Stats", 4483362458)
+local tabStatus = window:AddTab("Stats")
 
 local selectedPlayer = nil
 local connections = {}

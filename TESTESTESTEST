@@ -1382,18 +1382,18 @@ local strengthBar = tabStatus:AddProgressBar("Strength %")
 local durabilityBar = tabStatus:AddProgressBar("Durability %")
 local agilityBar = tabStatus:AddProgressBar("Agility %")
 
-tabStatus:CreateDivider("Advanced Stats")
+tabStatus:AddDivider("Advanced Stats")
 
 local labelBaseDurability = tabStatus:AddLabel("Base Durability: 0")
 local labelUltimateBoost = tabStatus:AddLabel("Ultimate Boost: 0 (+0%)")
-local labelPetBoost = tabStatus:AddLabel("Pet Boost (0): 0 (+0%)")
+local labelPetBoost = tabStatus:AddLabel("Pet Boost (0): +0%")
 local labelTotalDurability = tabStatus:AddLabel("TOTAL DURABILITY: 0", Color3.fromRGB(0, 255, 255))
 local labelBaseDamage = tabStatus:AddLabel("Your Base Damage: 0")
 local labelPetDamage = tabStatus:AddLabel("With Your Pets (0): 0", Color3.fromRGB(255, 0, 0))
 local labelHitsToKill = tabStatus:AddLabel("Hits to Kill: N/A")
 local labelTimeToKill = tabStatus:AddLabel("Time to Kill: N/A")
 
-tabStatus:CreateDivider("Pets Equipados")
+tabStatus:AddDivider("Pets Equipados")
 local labelPets = tabStatus:AddLabel("Pets: Nenhum")
 
 local function abbreviate(n)
@@ -1435,7 +1435,7 @@ local function updateStats(player)
 	labelRebirths:SetText("Rebirths: " .. rebirths .. " (" .. abbreviate(rebirths) .. ")")
 	labelKills:SetText("Kills: " .. kills)
 
-	strengthBar:Set(strength / 1000000) -- Exemplo: escala até 1 milhão
+	strengthBar:Set(strength / 1000000)
 	durabilityBar:Set(durability / 1000000)
 	agilityBar:Set(agility / 1000000)
 
@@ -1489,19 +1489,25 @@ local function monitorChanges(player)
 	end
 end
 
-local playerList = {}
-for _, p in ipairs(Players:GetPlayers()) do
-	table.insert(playerList, p.Name .. " (" .. p.DisplayName .. ")")
+local function createDropdown()
+	local playerList = {}
+	for _, p in ipairs(Players:GetPlayers()) do
+		table.insert(playerList, p.Name .. " (" .. p.DisplayName .. ")")
+	end
+
+	tabStatus:AddDropdown("Selecionar Jogador", playerList, function(selection)
+		for _, p in ipairs(Players:GetPlayers()) do
+			if selection == (p.Name .. " (" .. p.DisplayName .. ")") then
+				updateStats(p)
+				monitorChanges(p)
+				break
+			end
+		end
+	end)
 end
 
-tabStatus:CreateDropdown("Selecionar Jogador", playerList, function(selection)
-	for _, p in ipairs(Players:GetPlayers()) do
-		if selection == (p.Name .. " (" .. p.DisplayName .. ")") then
-			updateStats(p)
-			monitorChanges(p)
-			break
-		end
-	end
+tabStatus:AddButton("Atualizar Dropdown", function()
+	createDropdown()
 end)
 
 tabStatus:AddButton("Atualizar Manualmente", function()
@@ -1523,6 +1529,10 @@ tabStatus:AddButton("Spectate", function()
 		warn("Nenhum jogador selecionado.")
 	end
 end)
+
+createDropdown()
+updateStats(localPlayer)
+monitorChanges(localPlayer)
 
 local tabteleport = window:AddTab("Teleport")
 

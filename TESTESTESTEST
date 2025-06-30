@@ -1378,7 +1378,6 @@ local labelAgility = tabStatus:CreateLabel("Agility: 0 (0)")
 local labelRebirths = tabStatus:CreateLabel("Rebirths: 0 (0)")
 local labelKills = tabStatus:CreateLabel("Kills: 0")
 
--- Barras de progresso (percentuais fictícios)
 local strengthBar = tabStatus:CreateProgressBar("Strength %")
 local durabilityBar = tabStatus:CreateProgressBar("Durability %")
 local agilityBar = tabStatus:CreateProgressBar("Agility %")

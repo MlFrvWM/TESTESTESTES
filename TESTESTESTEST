@@ -1156,7 +1156,7 @@ task.spawn(function()
     end  
 end)
 
-local tabOP = tabOP:AddFolder("Ring Aura")
+local ring = tabOP:AddFolder("Ring Aura")
 
 function gettool()
 	for i, v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
@@ -1195,7 +1195,7 @@ local function createParticles(part)
 end
 
 local currentRadius = 75
-tabRing:AddTextBox("Ring Size", function(Value)
+tabOP:AddTextBox("Ring Size", function(Value)
 currentRadius = math.clamp(tonumber(Value) or 75, 1, 150)
 end)
 

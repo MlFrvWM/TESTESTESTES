@@ -1261,7 +1261,7 @@ local tabstatsFolder = window:AddTab("Stats")
 
 local function createDropdown()
 	if dropdown then dropdown:Destroy() end
-	dropdown = statsFolder:AddDropdown("Select Player", function(name)
+	dropdown = tabstatsFolder:AddDropdown("Select Player", function(name)
 		local player = Players:FindFirstChild(name)
 		targetPlayer = player or nil
 	end)

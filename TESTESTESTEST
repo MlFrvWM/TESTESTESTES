@@ -842,41 +842,68 @@ tabKiller:AddSwitch("Spy Player", function(bool)
     end)
 end)
 
-tabKiller:AddSwitch("Auto Equip Punch", function(state)
-	autoEquipPunch = state
-	task.spawn(function()
-		while autoEquipPunch do
-			local punch = LocalPlayer.Backpack:FindFirstChild("Punch")
-			if punch then
-				punch.Parent = LocalPlayer.Character
-			end
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local punchRemovedConnection = nil
+
+local function ensurePunchEquipped()
+	local punch = LocalPlayer.Backpack:FindFirstChild("Punch")
+	if punch then
+		punch.Parent = LocalPlayer.Character
+	end
+end
+
+local function startPunchMonitor()
+	if punchRemovedConnection then
+		punchRemovedConnection:Disconnect()
+	end
+
+	if not LocalPlayer.Character then return end
+
+	punchRemovedConnection = LocalPlayer.Character.ChildRemoved:Connect(function(child)
+		if child.Name == "Punch" and (autoEquipPunch or autoPunchNoAnim or _G.autoPunchActive or _G.fastHitActive) then
 			task.wait(0.1)
+			ensurePunchEquipped()
 		end
 	end)
+end
+
+tabKiller:AddSwitch("Auto Equip Punch", function(state)
+	autoEquipPunch = state
+	if state then
+		startPunchMonitor()
+		task.spawn(function()
+			while autoEquipPunch do
+				ensurePunchEquipped()
+				task.wait(0.1)
+			end
+		end)
+	end
 end)
 
 tabKiller:AddSwitch("Auto Punch [No Animation]", function(state)
 	autoPunchNoAnim = state
-	task.spawn(function()
-		while autoPunchNoAnim do
-			local punch = LocalPlayer.Backpack:FindFirstChild("Punch") or LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Punch")
-			if punch then
-				if punch.Parent ~= LocalPlayer.Character then
+	if state then
+		startPunchMonitor()
+		task.spawn(function()
+			while autoPunchNoAnim do
+				local punch = LocalPlayer.Backpack:FindFirstChild("Punch") or LocalPlayer.Character:FindFirstChild("Punch")
+				if punch and punch.Parent ~= LocalPlayer.Character then
 					punch.Parent = LocalPlayer.Character
 				end
 				LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
 				LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
-			else
-				autoPunchNoAnim = false
+				task.wait(0.01)
 			end
-			task.wait(0.01)
-		end
-	end)
+		end)
+	end
 end)
 
 tabKiller:AddSwitch("Auto Punch", function(state)
 	_G.autoPunchActive = state
 	if state then
+		startPunchMonitor()
 		task.spawn(function()
 			while _G.autoPunchActive do
 				local punch = LocalPlayer.Backpack:FindFirstChild("Punch")
@@ -891,24 +918,20 @@ tabKiller:AddSwitch("Auto Punch", function(state)
 		end)
 		task.spawn(function()
 			while _G.autoPunchActive do
-				local punch = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Punch")
+				local punch = LocalPlayer.Character:FindFirstChild("Punch")
 				if punch then
 					punch:Activate()
 				end
 				task.wait()
 			end
 		end)
-	else
-		local punch = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Punch")
-		if punch then
-			punch.Parent = LocalPlayer.Backpack
-		end
 	end
 end)
 
 tabKiller:AddSwitch("Fast Punch", function(state)
 	_G.fastHitActive = state
 	if state then
+		startPunchMonitor()
 		task.spawn(function()
 			while _G.fastHitActive do
 				local punch = LocalPlayer.Backpack:FindFirstChild("Punch")
@@ -923,18 +946,23 @@ tabKiller:AddSwitch("Fast Punch", function(state)
 		end)
 		task.spawn(function()
 			while _G.fastHitActive do
-				local punch = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Punch")
+				local punch = LocalPlayer.Character:FindFirstChild("Punch")
 				if punch then
 					punch:Activate()
 				end
 				task.wait(0.1)
 			end
 		end)
-	else
-		local punch = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Punch")
-		if punch then
-			punch.Parent = LocalPlayer.Backpack
-		end
+	end
+end)
+
+LocalPlayer.CharacterAdded:Connect(function(char)
+	char:WaitForChild("HumanoidRootPart")
+	task.wait(0.5)
+
+	if autoEquipPunch or autoPunchNoAnim or _G.autoPunchActive or _G.fastHitActive then
+		startPunchMonitor()
+		ensurePunchEquipped()
 	end
 end)
 
